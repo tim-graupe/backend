@@ -11,9 +11,9 @@ router.post("/register", authController.sign_up_post);
 // router.get("/register", authController.allUsers);
 router.post(
   "/login",
-  passport.authenticate("local-signin", {
-    successRedirect: "http://localhost:3001",
-    failureRedirect: "/users/login",
+  passport.authenticate("local", {
+    successRedirect: "/",
+    failureRedirect: "/register",
     passReqToCallback: true,
   }),
   (req, res) => {
