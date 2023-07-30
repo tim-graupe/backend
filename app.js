@@ -21,7 +21,13 @@ async function main() {
 const authRouter = require("./routes/auth");
 
 const app = express();
-app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
+app.use(
+  session({
+    secret: "cats",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(logger("dev"));
@@ -43,7 +49,6 @@ passport.use(
     async function (email, password, done) {
       try {
         const user = await User.findOne({ email: email });
-        console.log(user);
 
         if (!user) {
           console.log("Incorrect username.");
@@ -51,12 +56,12 @@ passport.use(
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);
-        console.log(passwordMatch);
+        console.log("passwordMatch", passwordMatch);
+
         if (!passwordMatch) {
           console.log("Incorrect password.");
           return done(null, false);
         }
-        console.log("passwords match!");
         return done(null, user);
       } catch (err) {
         console.log(err);
@@ -73,12 +78,16 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(async function (id, done) {
   try {
     const user = await User.findById(id);
+    console.log("deserialized user", user);
     done(null, user);
   } catch (err) {
     done(err);
   }
 });
-
+app.use(function (req, res, next) {
+  res.locals.currentUser = req.user;
+  next();
+});
 app.use(express.urlencoded({ extended: false }));
 // app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -107,7 +116,6 @@ app.use(function (req, res, next) {
 
 app.use("/", authRouter);
 app.use("/register", authRouter);
-app.use("/login", authRouter);
 const port = 4000;
 app.listen(port, () => {
   console.log(`App listening on port ${port}!`);
