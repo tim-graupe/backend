@@ -1,5 +1,6 @@
 const { body, validationResult } = require("express-validator");
 const User = require("../models/newUserModel");
+const passport = require("passport");
 const bcrypt = require("bcryptjs");
 const validator = require("email-validator");
 
@@ -31,7 +32,7 @@ exports.sign_up_post = [
     const user = new User({
       firstName: req.body.firstName,
       lastName: req.body.lastName,
-      password: bcrypt.hashSync(req.body.password, bcrypt.genSaltSync()),
+      password: req.body.password,
       email: req.body.email,
       // dob: req.body.dob,
     });
@@ -40,27 +41,9 @@ exports.sign_up_post = [
   },
 ];
 
-exports.loginPost = async function (req, res) {
-  const { email, password } = req.body;
-  try {
-    const user = await User.findOne({ email: req.body.email });
-
-    if (!user) {
-      console.log("user not found");
-    } else {
-      console.log(user);
-    }
-
-    const res = await bcrypt.compare(password, user.password);
-    if (res) {
-      console.log("match!");
-      console.log(res);
-      // passwords match! log user in
-      console.log(user);
-    } else {
-      console.log({ message: "Incorrect password" });
-    }
-  } catch (err) {
-    console.log("err");
-  }
+exports.loginPost = function (req, res) {
+  passport.authenticate("local", { failureRedirect: "/login" }),
+    function (req, res) {
+      res.redirect("/");
+    };
 };

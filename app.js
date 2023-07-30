@@ -1,21 +1,31 @@
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
+// const cookieParser = require("cookie-parser");
+const User = require("./models/newUserModel");
 const bodyParser = require("body-parser");
 const logger = require("morgan");
-const passport = require("passport");
-const app = express();
-require("dotenv").config();
-
-app.use(logger("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
-
-//cors
 const cors = require("cors");
-const allowedOrigins = ["http://localhost:3000", "https://localhost:3000"];
+const bcrypt = require("bcryptjs");
+require("dotenv").config();
+const session = require("express-session");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const mongoose = require("mongoose");
+mongoose.set("strictQuery", false);
+const mongoDB = process.env.mongoDB;
+main().catch((err) => console.log(err));
+async function main() {
+  await mongoose.connect(mongoDB);
+}
+const authRouter = require("./routes/auth");
+
+const app = express();
+app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(logger("dev"));
+app.use(bodyParser.json());
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header(
@@ -24,28 +34,7 @@ app.use(function (req, res, next) {
   );
   next();
 });
-app.use(cors(allowedOrigins));
 
-//mongoose
-const mongoose = require("mongoose");
-mongoose.set("strictQuery", false);
-const mongoDB = process.env.mongoDB;
-main().catch((err) => console.log(err));
-async function main() {
-  await mongoose.connect(mongoDB);
-}
-
-//routes
-const authRouter = require("./routes/auth");
-app.use("/", authRouter);
-app.use("/register", authRouter);
-app.use("/login", authRouter);
-const port = 4000;
-app.listen(port, () => {
-  console.log(`App listening on port ${port}!`);
-});
-
-//passport
 passport.use(
   new LocalStrategy(
     {
@@ -90,16 +79,38 @@ passport.deserializeUser(async function (id, done) {
   }
 });
 
-app.post(
-  "/login",
-  passport.authenticate("local", {
-    successRedirect: "/",
-    failureRedirect: "/",
-  })
-);
+app.use(express.urlencoded({ extended: false }));
+// app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
++app.use(express.static(path.join(__dirname, "public")));
+var corsOptions = {
+  origin: "http://localhost:3000",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 app.use(function (req, res, next) {
-  res.locals.currentUser = req.user;
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With,content-type"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", true);
   next();
+});
+
+app.use("/", authRouter);
+app.use("/register", authRouter);
+app.use("/login", authRouter);
+const port = 4000;
+app.listen(port, () => {
+  console.log(`App listening on port ${port}!`);
 });
 
 // catch 404 and forward to error handler
