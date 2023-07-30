@@ -10,6 +10,5 @@ router.get("/deuce", function (req, res, next) {
 });
 router.post("/register", authController.sign_up_post);
 router.get("/register", authController.allUsers);
-router.get("/login", authController.loginGet);
 router.post("/login", authController.loginPost);
 module.exports = router;

@@ -40,26 +40,15 @@ exports.sign_up_post = [
   },
 ];
 
-exports.allUsers = async function (req, res, next) {
-  try {
-    const user = await User.find().populate("email").exec();
-    return res.status(200).json(user);
-  } catch (err) {
-    return res.status(200).json({ message: "No users found." });
-  }
-};
-
-exports.loginGet = async function (req, res, next) {
-  res.sendFile(__dirname + "/");
-};
-
 exports.loginPost = async function (req, res) {
   const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email: req.body.username });
+    const user = await User.findOne({ email: req.body.email });
 
     if (!user) {
       console.log("user not found");
+    } else {
+      console.log(user);
     }
 
     const res = await bcrypt.compare(password, user.password);
@@ -72,7 +61,6 @@ exports.loginPost = async function (req, res) {
       console.log({ message: "Incorrect password" });
     }
   } catch (err) {
-    console.log(err);
-    console.log(err);
+    console.log("err");
   }
 };
