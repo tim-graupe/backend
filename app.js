@@ -1,7 +1,6 @@
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
-// const cookieParser = require("cookie-parser");
 const User = require("./models/newUserModel");
 const bodyParser = require("body-parser");
 const logger = require("morgan");
@@ -19,6 +18,7 @@ async function main() {
   await mongoose.connect(mongoDB);
 }
 const authRouter = require("./routes/auth");
+const userRouter = require("./routes/user");
 
 const app = express();
 app.use(
@@ -56,7 +56,6 @@ passport.use(
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);
-        console.log("passwordMatch", passwordMatch);
 
         if (!passwordMatch) {
           console.log("Incorrect password.");
@@ -78,7 +77,7 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(async function (id, done) {
   try {
     const user = await User.findById(id);
-    console.log("deserialized user", user);
+
     done(null, user);
   } catch (err) {
     done(err);
@@ -89,10 +88,9 @@ app.use(function (req, res, next) {
   next();
 });
 app.use(express.urlencoded({ extended: false }));
-// app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public")));
 var corsOptions = {
   origin: "http://localhost:3000",
   credentials: true,
@@ -116,6 +114,9 @@ app.use(function (req, res, next) {
 
 app.use("/", authRouter);
 app.use("/register", authRouter);
+app.use("/", userRouter);
+app.use("/user", userRouter);
+app.use("/user/:id", userRouter);
 const port = 4000;
 app.listen(port, () => {
   console.log(`App listening on port ${port}!`);

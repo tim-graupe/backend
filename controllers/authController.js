@@ -34,7 +34,8 @@ exports.sign_up_post = [
       lastName: req.body.lastName,
       password: req.body.password,
       email: req.body.email,
-      // dob: req.body.dob,
+      dob: req.body.dob,
+      status: "",
     });
     user.save();
     res.json(user);
