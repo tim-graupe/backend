@@ -117,6 +117,7 @@ app.use("/register", authRouter);
 app.use("/", userRouter);
 app.use("/user", userRouter);
 app.use("/user/:id", userRouter);
+app.use("/user/:id/posts", userRouter);
 const port = 4000;
 app.listen(port, () => {
   console.log(`App listening on port ${port}!`);

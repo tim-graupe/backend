@@ -16,6 +16,18 @@ exports.getUser = async function (req, res, next) {
   }
 };
 
+//get posts
+exports.getPosts = async function (req, res, next) {
+  try {
+    let user = await User.findById(req.params.id);
+
+    return res.status(200).json({ posts: user.posts });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: "Something went wrong in getting posts", err });
+  }
+};
 exports.editStatus = async function (req, res, next) {
   try {
     let user = await User.findByIdAndUpdate(req.params.id, {

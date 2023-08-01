@@ -4,6 +4,9 @@ const postsController = require("../controllers/postsController");
 
 //new text post
 router.post("/user/:id/new_post", postsController.newTextPost);
+
+//get user's posts
+router.get("/user/:id/posts", postsController.getPosts);
 //user profile
 router.get("/user/:id", postsController.getUser);
 
