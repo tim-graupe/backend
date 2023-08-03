@@ -35,6 +35,12 @@ exports.sign_up_post = [
       password: req.body.password,
       email: req.body.email,
       dob: req.body.dob,
+      relationship: req.body.relationship,
+      politics: req.body.politics,
+      college: req.body.college,
+      high_school: req.body.high_school,
+      home_town: req.body.home_town,
+      current_city: req.body.current_city,
       status: "",
     });
     user.save();

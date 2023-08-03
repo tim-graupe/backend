@@ -61,3 +61,5 @@ exports.newTextPost = async function (req, res, next) {
     return res.status(500).json({ error: "Something went wrong!", err });
   }
 };
+
+//search user
