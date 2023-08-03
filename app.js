@@ -83,10 +83,7 @@ passport.deserializeUser(async function (id, done) {
     done(err);
   }
 });
-app.use(function (req, res, next) {
-  res.locals.currentUser = req.user;
-  next();
-});
+
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -115,9 +112,9 @@ app.use(function (req, res, next) {
 app.use("/", authRouter);
 app.use("/register", authRouter);
 app.use("/", userRouter);
-app.use("/user", userRouter);
-app.use("/user/:id", userRouter);
-app.use("/user/:id/posts", userRouter);
+// app.use("/user", userRouter);
+// app.use("/user/:id", userRouter);
+// app.use("/user/:id/posts", userRouter);
 const port = 4000;
 app.listen(port, () => {
   console.log(`App listening on port ${port}!`);
