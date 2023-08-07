@@ -10,6 +10,7 @@ require("dotenv").config();
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const mongoose = require("mongoose");
 mongoose.set("strictQuery", false);
 const mongoDB = process.env.mongoDB;
@@ -23,7 +24,7 @@ const userRouter = require("./routes/user");
 const app = express();
 app.use(
   session({
-    secret: "cats",
+    secret: process.env.secret,
     resave: true,
     saveUninitialized: true,
   })
@@ -63,8 +64,40 @@ passport.use(
         }
         return done(null, user);
       } catch (err) {
-        console.log(err);
+        console.log("err");
         return done(err);
+      }
+    }
+  )
+);
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.googleID,
+      clientSecret: process.env.googleSecret,
+      callbackURL: "/auth/google/callback",
+    },
+    async function (accessToken, refreshToken, profile, cb) {
+      try {
+        let existingUser = await User.findOne({
+          email: profile.emails[0].value,
+        });
+        if (!existingUser) {
+          const newUser = new User({
+            email: profile.emails[0].value,
+            firstName: profile.name.givenName,
+            lastName: profile.name.familyName,
+            profile_pic: profile.photos[0].value,
+            password: "password",
+          });
+          await newUser.save();
+          return newUser;
+        } else {
+          return existingUser;
+        }
+      } catch (err) {
+        throw err;
       }
     }
   )
@@ -83,6 +116,22 @@ passport.deserializeUser(async function (id, done) {
     done(err);
   }
 });
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  function (req, res) {
+    // Successful authentication, redirect home.
+    res.redirect("/");
+  }
+);
 
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -112,9 +161,7 @@ app.use(function (req, res, next) {
 app.use("/", authRouter);
 app.use("/register", authRouter);
 app.use("/", userRouter);
-// app.use("/user", userRouter);
-// app.use("/user/:id", userRouter);
-// app.use("/user/:id/posts", userRouter);
+
 const port = 4000;
 app.listen(port, () => {
   console.log(`App listening on port ${port}!`);

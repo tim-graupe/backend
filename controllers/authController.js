@@ -48,6 +48,7 @@ exports.sign_up_post = [
   },
 ];
 
+//local login
 exports.loginPost = function (req, res) {
   passport.authenticate("local", { failureRedirect: "/login" }),
     function (req, res) {
