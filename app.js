@@ -42,6 +42,7 @@ app.use(function (req, res, next) {
   next();
 });
 
+//passport start - to be moved
 passport.use(
   new LocalStrategy(
     {
@@ -76,7 +77,7 @@ passport.use(
     {
       clientID: process.env.googleID,
       clientSecret: process.env.googleSecret,
-      callbackURL: "/auth/google/callback",
+      callbackURL: "http://localhost:4000/auth/google/callback",
     },
     async function (accessToken, refreshToken, profile, cb) {
       try {
@@ -84,6 +85,7 @@ passport.use(
           email: profile.emails[0].value,
         });
         if (!existingUser) {
+          console.log("user not found! creating user...");
           const newUser = new User({
             email: profile.emails[0].value,
             firstName: profile.name.givenName,
@@ -94,6 +96,7 @@ passport.use(
           await newUser.save();
           return newUser;
         } else {
+          console.log("USER FOUND");
           return existingUser;
         }
       } catch (err) {
@@ -109,14 +112,16 @@ passport.serializeUser(function (user, done) {
 
 passport.deserializeUser(async function (id, done) {
   try {
-    const user = await User.findById(id);
+    const user = await User.findById({ id: user._id });
 
     done(null, user);
   } catch (err) {
     done(err);
   }
 });
+//passport end - to be moved
 
+//routes - to be moved
 app.get(
   "/auth/google",
   passport.authenticate("google", {
@@ -132,6 +137,7 @@ app.get(
     res.redirect("/");
   }
 );
+//routes - to be moved
 
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.urlencoded({ extended: false }));
