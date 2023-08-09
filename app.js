@@ -79,44 +79,49 @@ passport.use(
       clientSecret: process.env.googleSecret,
       callbackURL: "http://localhost:4000/auth/google/callback",
     },
-    async function (accessToken, refreshToken, profile, cb) {
+    async function (accessToken, refreshToken, profile, done) {
       try {
         let existingUser = await User.findOne({
           email: profile.emails[0].value,
         });
+
         if (!existingUser) {
-          console.log("user not found! creating user...");
+          console.log("User not found! Creating user...");
           const newUser = new User({
             email: profile.emails[0].value,
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
             profile_pic: profile.photos[0].value,
-            password: "password",
+            password: "",
           });
+
           await newUser.save();
-          return newUser;
+          console.log("User created:", newUser);
+          return done(null, newUser);
         } else {
-          console.log("USER FOUND");
-          return existingUser;
+          console.log("User found:", existingUser);
+          return done(null, existingUser);
         }
       } catch (err) {
-        throw err;
+        console.error("Error:", err);
+        return done(err, null);
       }
     }
   )
 );
 
+// Serialize user to session
 passport.serializeUser(function (user, done) {
   done(null, user.id);
 });
 
+// Deserialize user from session
 passport.deserializeUser(async function (id, done) {
   try {
     const user = await User.findById(id);
-
     done(null, user);
   } catch (err) {
-    done(err);
+    done(err, null);
   }
 });
 //passport end - to be moved
