@@ -5,7 +5,7 @@ const passport = require("passport");
 const jwt = require("jsonwebtoken");
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  res.send({ auth: req.isAuthenticated(), user: res.locals });
+  res.send({ auth: req.isAuthenticated(), user: req.user });
 });
 
 router.post("/register", authController.sign_up_post);
