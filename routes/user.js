@@ -13,4 +13,7 @@ router.get("/user/:id", postsController.getUser);
 //edit user's status
 router.put("/user/:id", postsController.editStatus);
 
+//search for user
+router.get("/search", postsController.findUser);
+
 module.exports = router;

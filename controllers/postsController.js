@@ -63,3 +63,47 @@ exports.newTextPost = async function (req, res, next) {
 };
 
 //search user
+exports.findUser = async function (req, res, next) {
+  const searchName = req.query.name
+    .split(" ")
+    .filter((name) => name.trim() !== "");
+  const searchQuery = {
+    $or: [
+      {
+        firstName: {
+          $in: searchName.map((name) => new RegExp(name, "i")),
+        },
+      },
+      {
+        lastName: {
+          $in: searchName.map((name) => new RegExp(name, "i")),
+        },
+      },
+    ],
+  };
+
+  try {
+    const searchResults = await User.find(searchQuery);
+    res.json(searchResults);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// exports.findUser = async function (req, res, next) {
+//   try {
+//     const searchResults = await User.find({
+//       $expr: {
+//         $regexMatch: {
+//           input: { $concat: ["$firstName", " ", "$lastName"] },
+//           regex: req.firstName,
+//           options: "i",
+//         },
+//       },
+//     });
+//     res.json(searchResults);
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
