@@ -96,10 +96,8 @@ passport.use(
           });
 
           await newUser.save();
-          console.log("User created:", newUser);
           return done(null, newUser);
         } else {
-          console.log("User found:", existingUser);
           return done(null, existingUser);
         }
       } catch (err) {

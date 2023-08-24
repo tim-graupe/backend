@@ -6,13 +6,12 @@ exports.getUser = async function (req, res, next) {
   try {
     const userId = req.params.id;
     let user = await User.findById(userId);
-    console.log("req.params.id", userId);
     return res.status(200).send(user);
   } catch (err) {
     console.log("err", err);
     return res
       .status(500)
-      .json({ error: "Something went wrong in getting user", err });
+      .json({ error: "Something went wrong in getting user" });
   }
 };
 
