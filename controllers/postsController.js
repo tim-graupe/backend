@@ -90,6 +90,25 @@ exports.findUser = async function (req, res, next) {
   }
 };
 
+exports.editUserInfo = async function (req, res, next) {
+  try {
+    let user = await User.findByIdAndUpdate(req.params.id, {
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      // profile_pic: { type: String, default: "" },
+      relationship: req.body.relationship,
+      politics: req.body.politics,
+      high_school: req.body.high_school,
+      college: req.body.college,
+      current_city: req.body.current_city,
+      home_town: req.body.home_town,
+      // dob: req.body.dob,
+    });
+    return res.status(200).json(user);
+  } catch (err) {
+    return res.status(500).json({ error: "Something went wrong!", err });
+  }
+};
 // exports.findUser = async function (req, res, next) {
 //   try {
 //     const searchResults = await User.find({
