@@ -9,6 +9,12 @@ const PostSchema = new Schema({
     minLength: 1,
     maxLength: 1000,
   },
+  poster: {
+    type: String,
+  },
+  pic: {
+    type: String,
+  },
   date_posted: { type: Date, default: Date.now },
   likes: { type: Array },
   replies: { type: Array },

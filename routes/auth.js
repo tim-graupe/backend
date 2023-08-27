@@ -20,13 +20,13 @@ router.post(
     passReqToCallback: true,
   }),
   (req, res) => {
-    // res.json({ user: req.user });
+    res.json({ user: req.user });
     res.send({ autha: req.isAuthenticated(), user: req.user });
   }
 );
 
 router.get("/home", function (req, res, next) {
-  // res.json({ auth: req.isAuthenticated(), user: req.user });
+  res.json({ auth: req.isAuthenticated(), user: req.user });
 });
 router.post(
   "/",
@@ -36,8 +36,8 @@ router.post(
     passReqToCallback: true,
   }),
   (req, res) => {
-    // res.json({ user: req.user });
-    // res.json({ auth: req.isAuthenticated(), user: req.user });
+    res.json({ user: req.user });
+    res.json({ auth: req.isAuthenticated(), user: req.user });
   }
 );
 

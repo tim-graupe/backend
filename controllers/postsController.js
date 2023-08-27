@@ -51,6 +51,8 @@ exports.newTextPost = async function (req, res, next) {
             replies: [],
             likes: [],
             date_posted: Date.now(),
+            poster: req.body.poster,
+            pic: req.body.pic,
             //convert this later to Short Month Name Day Year Time
           },
         },
@@ -109,6 +111,7 @@ exports.editUserInfo = async function (req, res, next) {
     return res.status(500).json({ error: "Something went wrong!", err });
   }
 };
+
 // exports.findUser = async function (req, res, next) {
 //   try {
 //     const searchResults = await User.find({
