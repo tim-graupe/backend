@@ -1,6 +1,39 @@
 const { body, validationResult } = require("express-validator");
 const Post = require("../models/newPostModel");
 const User = require("../models/newUserModel");
+const FriendReq = require("../models/friendReqModel");
+const Friend = require("../models/friendModel");
+
+exports.sendFriendReq = async function (req, res, next) {
+  let friendReq = new FriendReq(req.user._id);
+  try {
+    let user = await User.findByIdAndUpdate(
+      {
+        _id: req.params.id,
+      },
+
+      {
+        $push: { incomingFriendRequests: req.user._id },
+      }
+    );
+  } catch (err) {
+    return res.status(500).json({ error: "error found!", err });
+  }
+};
+//
+exports.getFriendReqs = async function (req, res, next) {
+  let id = req.params.id;
+
+  try {
+    let user = await User.findById(id);
+    let friendReqs = await User.find({
+      _id: { $in: user.incomingFriendRequests },
+    });
+    return res.status(200).send(friendReqs);
+  } catch (err) {
+    return res.status(500).json({ error: "error found!", err });
+  }
+};
 
 exports.getUser = async function (req, res, next) {
   try {
@@ -15,53 +48,82 @@ exports.getUser = async function (req, res, next) {
   }
 };
 
-//get posts
+//get posts - old
+// exports.getPosts = async function (req, res, next) {
+//   try {
+//     let user = await User.findById(req.params.id);
+
+//     return res.status(200).json({ posts: user.posts });
+//   } catch (err) {
+//     return res
+//       .status(500)
+//       .json({ error: "Something went wrong in getting posts", err });
+//   }
+// };
+// exports.editStatus = async function (req, res, next) {
+//   try {
+//     let user = await User.findByIdAndUpdate(req.params.id, {
+//       status: req.body.content,
+//     });
+//     return res.status(200).json(user);
+//   } catch (err) {
+//     return res.status(500).json({ error: "Something went wrong!", err });
+//   }
+// };
+
 exports.getPosts = async function (req, res, next) {
   try {
-    let user = await User.findById(req.params.id);
-
-    return res.status(200).json({ posts: user.posts });
+    let posts = await Post.find({ user: req.params.id })
+      .populate("content")
+      .populate("user")
+      .populate("poster")
+      .exec();
+    return res.status(200).json(posts);
   } catch (err) {
-    return res
-      .status(500)
-      .json({ error: "Something went wrong in getting posts", err });
-  }
-};
-exports.editStatus = async function (req, res, next) {
-  try {
-    let user = await User.findByIdAndUpdate(req.params.id, {
-      status: req.body.content,
-    });
-    return res.status(200).json(user);
-  } catch (err) {
-    return res.status(500).json({ error: "Something went wrong!", err });
+    return res.status(500).json({ error: "error found!", err });
   }
 };
 
 exports.newTextPost = async function (req, res, next) {
   try {
-    let user = await User.findByIdAndUpdate(
-      {
-        _id: req.params.id,
-      },
-      {
-        $push: {
-          posts: {
-            content: req.body.content,
-            replies: [],
-            likes: [],
-            date_posted: Date.now(),
-            poster: req.body.poster,
-            pic: req.body.pic,
-            //convert this later to Short Month Name Day Year Time
-          },
-        },
-      }
-    );
+    let user = await User.findById(req.params.id);
+    let poster = await User.findById(req.body.poster);
+    let newPost = new Post({
+      content: req.body.content,
+      poster: poster,
+      likes: [],
+      date_posted: Date.now(),
+      user: user._id,
+    });
+    await newPost.save();
   } catch (err) {
-    return res.status(500).json({ error: "Something went wrong!", err });
+    res.status(500).json({ error: "error found", err });
   }
 };
+
+// exports.newTextPost = async function (req, res, next) {
+//   try {
+//     let user = await User.findByIdAndUpdate(
+//       {
+//         _id: req.params.id,
+//       },
+//       {
+//         $push: {
+//           posts: {
+// content: req.body.content,
+// id: req.body.id,
+// likes: [],
+// date_posted: Date.now(),
+// poster: req.body.poster,
+// pic: req.body.pic,
+//           },
+//         },
+//       }
+//     );
+//   } catch (err) {
+//     return res.status(500).json({ error: "Something went wrong!", err });
+//   }
+// };
 
 //search user
 exports.findUser = async function (req, res, next) {
@@ -112,19 +174,44 @@ exports.editUserInfo = async function (req, res, next) {
   }
 };
 
-// exports.findUser = async function (req, res, next) {
+// exports.sendFriendReq = async function (req, res, next) {
 //   try {
-//     const searchResults = await User.find({
-//       $expr: {
-//         $regexMatch: {
-//           input: { $concat: ["$firstName", " ", "$lastName"] },
-//           regex: req.firstName,
-//           options: "i",
-//         },
+//     let user = await User.findByIdAndUpdate(
+//       {
+//         _id: req.params.id,
 //       },
-//     });
-//     res.json(searchResults);
+//       {
+//         $push: {
+//           incomingFriendRequests: {
+//             FriendReq: {
+//               sender: req.body.id,
+//               recipient: req.params.id,
+//               accepted: false,
+//             },
+//           },
+//         },
+//       }
+//     );
 //   } catch (err) {
-//     console.log(err);
+//     return res.status(500).json({ error: "Error found!", err });
 //   }
 // };
+//
+exports.acceptFriendReq = async function (req, res, next) {
+  console.log(res);
+  // try {
+  //   let friend = new Friend({
+  //     friend: req.params.id,
+  //   });
+  // $push: {
+  //   friends: {
+  //     id: newFriendId;
+  //   }
+  // }
+  // $pull: {
+  //   incomingFriendRequests: req.params.id;
+  // }
+  // } catch (err) {
+  //   return res.status(500).json({ error: "Error found!", err });
+  // }
+};

@@ -15,7 +15,7 @@ const UserSchema = new mongoose.Schema({
   current_city: { type: String, default: "", maxLength: 85 },
   home_town: { type: String, default: "", maxLength: 85 },
   dob: { type: Date },
-  posts: { type: Array },
+  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   friends: { type: Array },
   incomingFriendRequests: { type: Array },
   outgoingFriendRequests: { type: Array },

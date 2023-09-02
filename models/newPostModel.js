@@ -9,15 +9,16 @@ const PostSchema = new Schema({
     minLength: 1,
     maxLength: 1000,
   },
-  poster: {
-    type: String,
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
   },
   pic: {
     type: String,
   },
+  poster: { type: Schema.Types.ObjectId, ref: "User" },
   date_posted: { type: Date, default: Date.now },
   likes: { type: Array },
-  replies: { type: Array },
 });
 
 PostSchema.virtual("url").get(function () {
