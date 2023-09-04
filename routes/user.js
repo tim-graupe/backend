@@ -26,6 +26,8 @@ router.post("/sendFriendReq/:id", postsController.sendFriendReq);
 router.get("/getFriendReqs/:id", postsController.getFriendReqs);
 
 //accept friend req
-router.get("/acceptFriendReq/:id", postsController.acceptFriendReq);
+router.post("/acceptFriendReq/:id", postsController.acceptFriendReq);
 
+//get friends
+router.get("/getFriends/:id", postsController.getFriends);
 module.exports = router;

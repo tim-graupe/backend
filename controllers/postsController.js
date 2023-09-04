@@ -4,37 +4,19 @@ const User = require("../models/newUserModel");
 const FriendReq = require("../models/friendReqModel");
 const Friend = require("../models/friendModel");
 
-exports.sendFriendReq = async function (req, res, next) {
-  let friendReq = new FriendReq(req.user._id);
-  try {
-    let user = await User.findByIdAndUpdate(
-      {
-        _id: req.params.id,
-      },
-
-      {
-        $push: { incomingFriendRequests: req.user._id },
-      }
-    );
-  } catch (err) {
-    return res.status(500).json({ error: "error found!", err });
-  }
-};
-//
+//get friend reqs
 exports.getFriendReqs = async function (req, res, next) {
-  let id = req.params.id;
-
   try {
-    let user = await User.findById(id);
-    let friendReqs = await User.find({
-      _id: { $in: user.incomingFriendRequests },
-    });
+    let friendReqs = await FriendReq.find({
+      receiver: req.user._id,
+    })
+      .populate("sender", ["firstName", "lastName", "profile_pic"])
+      .exec();
     return res.status(200).send(friendReqs);
   } catch (err) {
     return res.status(500).json({ error: "error found!", err });
   }
 };
-
 exports.getUser = async function (req, res, next) {
   try {
     const userId = req.params.id;
@@ -47,29 +29,6 @@ exports.getUser = async function (req, res, next) {
       .json({ error: "Something went wrong in getting user" });
   }
 };
-
-//get posts - old
-// exports.getPosts = async function (req, res, next) {
-//   try {
-//     let user = await User.findById(req.params.id);
-
-//     return res.status(200).json({ posts: user.posts });
-//   } catch (err) {
-//     return res
-//       .status(500)
-//       .json({ error: "Something went wrong in getting posts", err });
-//   }
-// };
-// exports.editStatus = async function (req, res, next) {
-//   try {
-//     let user = await User.findByIdAndUpdate(req.params.id, {
-//       status: req.body.content,
-//     });
-//     return res.status(200).json(user);
-//   } catch (err) {
-//     return res.status(500).json({ error: "Something went wrong!", err });
-//   }
-// };
 
 exports.getPosts = async function (req, res, next) {
   try {
@@ -100,30 +59,6 @@ exports.newTextPost = async function (req, res, next) {
     res.status(500).json({ error: "error found", err });
   }
 };
-
-// exports.newTextPost = async function (req, res, next) {
-//   try {
-//     let user = await User.findByIdAndUpdate(
-//       {
-//         _id: req.params.id,
-//       },
-//       {
-//         $push: {
-//           posts: {
-// content: req.body.content,
-// id: req.body.id,
-// likes: [],
-// date_posted: Date.now(),
-// poster: req.body.poster,
-// pic: req.body.pic,
-//           },
-//         },
-//       }
-//     );
-//   } catch (err) {
-//     return res.status(500).json({ error: "Something went wrong!", err });
-//   }
-// };
 
 //search user
 exports.findUser = async function (req, res, next) {
@@ -174,44 +109,58 @@ exports.editUserInfo = async function (req, res, next) {
   }
 };
 
-// exports.sendFriendReq = async function (req, res, next) {
-//   try {
-//     let user = await User.findByIdAndUpdate(
-//       {
-//         _id: req.params.id,
-//       },
-//       {
-//         $push: {
-//           incomingFriendRequests: {
-//             FriendReq: {
-//               sender: req.body.id,
-//               recipient: req.params.id,
-//               accepted: false,
-//             },
-//           },
-//         },
-//       }
-//     );
-//   } catch (err) {
-//     return res.status(500).json({ error: "Error found!", err });
-//   }
-// };
-//
+exports.sendFriendReq = async function (req, res, next) {
+  try {
+    let sender = await User.findById(req.body.id);
+    let receiver = await User.findById(req.params.id);
+    let newFriendReq = new FriendReq({
+      sender: sender,
+      receiver: receiver,
+    });
+    await newFriendReq.save();
+  } catch (err) {
+    return res.status(500).json({ error: "Error found!", err });
+  }
+};
 exports.acceptFriendReq = async function (req, res, next) {
-  console.log(res);
-  // try {
-  //   let friend = new Friend({
-  //     friend: req.params.id,
-  //   });
-  // $push: {
-  //   friends: {
-  //     id: newFriendId;
-  //   }
-  // }
-  // $pull: {
-  //   incomingFriendRequests: req.params.id;
-  // }
-  // } catch (err) {
-  //   return res.status(500).json({ error: "Error found!", err });
-  // }
+  try {
+    let newFriend = new Friend({
+      friend: req.body.id,
+    });
+
+    await newFriend.save();
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: req.user._id },
+      {
+        $push: {
+          friends: newFriend.friend, // Push the _id of the new friend
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Error found!", err });
+  }
+};
+exports.getFriends = async function (req, res, next) {
+  try {
+    const user = await User.findById(req.params.id)
+      .populate("friends", ["firstName", "lastName", "profile_pic"])
+      .exec();
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    return res.status(200).json({ user });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Error found!", err });
+  }
 };
