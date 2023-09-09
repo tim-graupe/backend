@@ -213,3 +213,37 @@ exports.getFriendsPosts = async function (req, res, next) {
     return res.status(500).json({ error: "Error found!", err });
   }
 };
+
+exports.deleteFriend = async function (req, res, next) {
+  try {
+    // RequestingFriendsId is the ID of the user who sent the request
+    const deletedUsersId = new ObjectId(req.params.id);
+    const currentUserID = req.user._id;
+    console.log("deletedUsersId", deletedUsersId);
+    console.log("currentUserID", currentUserID);
+    // Update the current user's friends list
+    await User.updateOne(
+      { _id: currentUserID },
+      {
+        $pull: { friends: deletedUsersId },
+      }
+    );
+
+    // Update the requesting user's friends list
+    await User.updateOne(
+      { _id: deletedUsersId },
+      {
+        $pull: { friends: currentUserID },
+      }
+    );
+
+    return res
+      .status(200)
+      .json({ success: true, message: "friend successfully removed" });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: "Error occurred while deleting friend" });
+  }
+};

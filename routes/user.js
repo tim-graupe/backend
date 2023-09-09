@@ -28,6 +28,9 @@ router.get("/getFriendReqs/:id", postsController.getFriendReqs);
 //accept friend req
 router.post("/acceptFriendReq/:id", postsController.acceptFriendReq);
 
+//delete friend
+router.post("/deleteFriend/:id", postsController.deleteFriend);
+
 //get friends
 router.get("/getFriends/:id", postsController.getFriends);
 
