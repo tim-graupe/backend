@@ -40,6 +40,8 @@ exports.getPosts = async function (req, res, next) {
       .populate("content")
       .populate("user")
       .populate("poster")
+      .populate("likes")
+      .populate("comments")
       .exec();
     return res.status(200).json(posts);
   } catch (err) {
