@@ -30,4 +30,8 @@ router.post("/acceptFriendReq/:id", postsController.acceptFriendReq);
 
 //get friends
 router.get("/getFriends/:id", postsController.getFriends);
+
+//get friends posts for timeline
+router.get("/getFriendsPosts/:id", postsController.getFriendsPosts);
+
 module.exports = router;

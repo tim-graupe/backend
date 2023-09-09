@@ -17,8 +17,12 @@ const UserSchema = new mongoose.Schema({
   dob: { type: Date },
   posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
   friends: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  incomingFriendRequests: { type: Array },
-  outgoingFriendRequests: { type: Array },
+  incomingFriendRequests: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  ],
+  outgoingFriendRequests: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  ],
 });
 
 UserSchema.pre("save", function (next) {

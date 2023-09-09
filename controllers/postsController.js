@@ -1,20 +1,24 @@
 const { body, validationResult } = require("express-validator");
 const Post = require("../models/newPostModel");
 const User = require("../models/newUserModel");
-const FriendReq = require("../models/friendReqModel");
-const Friend = require("../models/friendModel");
+
+const { ObjectId } = require("mongodb");
 
 //get friend reqs
 exports.getFriendReqs = async function (req, res, next) {
   try {
-    let friendReqs = await FriendReq.find({
-      receiver: req.user._id,
+    let friendReqs = await User.findOne({
+      _id: req.user._id,
     })
-      .populate("sender", ["firstName", "lastName", "profile_pic"])
+      .populate("incomingFriendRequests", [
+        "firstName",
+        "lastName",
+        "profile_pic",
+      ])
       .exec();
-    return res.status(200).send(friendReqs);
+    return res.status(200).send(friendReqs.incomingFriendRequests);
   } catch (err) {
-    return res.status(500).json({ error: "error found!", err });
+    return res.status(500).json({ error: "Error found!", err });
   }
 };
 exports.getUser = async function (req, res, next) {
@@ -44,6 +48,7 @@ exports.getPosts = async function (req, res, next) {
 };
 
 exports.newTextPost = async function (req, res, next) {
+  //user is the person whose profile is receiving the new post. Poster is the commenter
   try {
     let user = await User.findById(req.params.id);
     let poster = await User.findById(req.body.poster);
@@ -111,48 +116,92 @@ exports.editUserInfo = async function (req, res, next) {
 
 exports.sendFriendReq = async function (req, res, next) {
   try {
-    let sender = await User.findById(req.body.id);
-    let receiver = await User.findById(req.params.id);
-    let newFriendReq = new FriendReq({
-      sender: sender,
-      receiver: receiver,
-    });
-    await newFriendReq.save();
+    // Find the sender and receiver by their IDs
+    const sender = await User.findById(req.body.id);
+    const receiver = await User.findById(req.params.id);
+    // Check if sender and receiver are already friends
+    if (sender.friends.includes(receiver._id)) {
+      return res
+        .status(400)
+        .json({ error: "You are already friends with this user." });
+    }
+    // Check if a request has already been sent
+    if (sender.outgoingFriendRequests.includes(receiver._id)) {
+      return res.status(400).json({
+        error: "You have already sent a friend request to this user.",
+      });
+    }
+    // Check if the receiver has already received a request
+    if (receiver.incomingFriendRequests.includes(sender._id)) {
+      return res
+        .status(400)
+        .json({ error: "A friend request from this user is already pending." });
+    }
+    // Sends the friend request
+    sender.outgoingFriendRequests.push(receiver._id);
+    receiver.incomingFriendRequests.push(sender._id);
+
+    await sender.save();
+    await receiver.save();
+
+    res.status(200).json({ message: "Friend request sent successfully!" });
   } catch (err) {
     return res.status(500).json({ error: "Error found!", err });
   }
 };
 exports.acceptFriendReq = async function (req, res, next) {
   try {
-    let newFriend = new Friend({
-      friend: req.body.id,
-    });
+    // RequestingFriendsId is the ID of the user who sent the request
+    const requestingUserId = req.body.RequestingFriendsId._id;
+    const currentUserID = req.user._id;
 
-    await newFriend.save();
-    const updatedUser = await User.findByIdAndUpdate(
-      { _id: req.user._id },
+    // Update the current user's friends list
+    await User.updateOne(
+      { _id: currentUserID },
       {
-        $push: {
-          friends: newFriend.friend, // Push the _id of the new friend
-        },
-      },
-      { new: true }
+        $push: { friends: new ObjectId(requestingUserId) },
+        $pull: { incomingFriendRequests: requestingUserId },
+      }
     );
 
-    if (!updatedUser) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    // Update the requesting user's friends list
+    await User.updateOne(
+      { _id: new ObjectId(requestingUserId) },
+      {
+        $push: { friends: currentUserID },
+        $pull: { outgoingFriendRequests: currentUserID },
+      }
+    );
 
     return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: "Error occurred while accepting friend request" });
+  }
+};
+
+exports.getFriends = async function (req, res, next) {
+  try {
+    const user = await User.findById(req.params.id)
+      .populate("friends", ["firstName", "lastName", "profile_pic"])
+      .exec();
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    return res.status(200).json({ user });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Error found!", err });
   }
 };
-exports.getFriends = async function (req, res, next) {
+
+exports.getFriendsPosts = async function (req, res, next) {
   try {
-    const user = await User.findById(req.params.id)
-      .populate("friends", ["firstName", "lastName", "profile_pic"])
+    const user = await User.findById(req.user._id)
+      .populate("friends", ["firstName", "lastName", "profile_pic", "posts"])
       .exec();
 
     if (!user) {
