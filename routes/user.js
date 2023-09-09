@@ -7,6 +7,12 @@ router.post("/user/:id/new_post", postsController.newTextPost);
 
 //get user's post
 router.get("/user/:id/posts", postsController.getPosts);
+
+//like post
+router.post("/likePost/:id", postsController.addLikeToPost);
+
+//new comment
+router.post("/commentOnPost/:id", postsController.newComment);
 //user profile
 router.get("/user/:id", postsController.getUser);
 
