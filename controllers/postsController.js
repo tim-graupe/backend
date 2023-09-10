@@ -24,7 +24,9 @@ exports.getFriendReqs = async function (req, res, next) {
 exports.getUser = async function (req, res, next) {
   try {
     const userId = req.params.id;
-    let user = await User.findById(userId);
+    let user = await User.findById(userId)
+      .populate("friends", ["firstName", "lastName", "profile_pic"])
+      .exec();
     return res.status(200).send(user);
   } catch (err) {
     console.log("err", err);
@@ -172,13 +174,14 @@ exports.editUserInfo = async function (req, res, next) {
     return res.status(500).json({ error: "Something went wrong!", err });
   }
 };
-
+//send a friend request
 exports.sendFriendReq = async function (req, res, next) {
   try {
     // Find the sender and receiver by their IDs
     const sender = await User.findById(req.body.id);
     const receiver = await User.findById(req.params.id);
     // Check if sender and receiver are already friends
+
     if (sender.friends.includes(receiver._id)) {
       return res
         .status(400)
@@ -208,6 +211,8 @@ exports.sendFriendReq = async function (req, res, next) {
     return res.status(500).json({ error: "Error found!", err });
   }
 };
+
+//accept friend req
 exports.acceptFriendReq = async function (req, res, next) {
   try {
     // RequestingFriendsId is the ID of the user who sent the request
@@ -241,6 +246,37 @@ exports.acceptFriendReq = async function (req, res, next) {
   }
 };
 
+exports.rejectFriendReq = async function (req, res, next) {
+  try {
+    // RequestingFriendsId is the ID of the user who sent the request
+    const requestingUserId = req.body.RequestingFriendsId._id;
+    const currentUserID = req.user._id;
+
+    // Update the current user's friends list
+    await User.updateOne(
+      { _id: currentUserID },
+      {
+        $pull: { incomingFriendRequests: requestingUserId },
+      }
+    );
+
+    // Update the requesting user's friends list
+    await User.updateOne(
+      { _id: new ObjectId(requestingUserId) },
+      {
+        $pull: { outgoingFriendRequests: currentUserID },
+      }
+    );
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: "Error occurred while rejecting friend request" });
+  }
+};
+
 exports.getFriends = async function (req, res, next) {
   try {
     const user = await User.findById(req.params.id)
@@ -257,12 +293,13 @@ exports.getFriends = async function (req, res, next) {
   }
 };
 
-exports.getFriendsPosts = async function (req, res, next) {
+//getFriendsList shows the loggedin user's profile pics and names for their dashboard
+exports.getFriendsList = async function (req, res, next) {
   try {
     const user = await User.findById(req.user._id)
-      .populate("friends", ["firstName", "lastName", "profile_pic", "posts"])
+      .populate("friends", ["firstName", "lastName", "profile_pic"])
       .exec();
-
+    console.log(user);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -270,6 +307,20 @@ exports.getFriendsPosts = async function (req, res, next) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Error found!", err });
+  }
+};
+
+//Used to show friends post feed on user's homepage / main dashboard
+exports.getFriendsPosts = async function (req, res, next) {
+  try {
+    const user = await User.findById(req.user._id);
+    const friendsPosts = await Post.find({
+      poster: { $in: user.friends },
+    }).populate("poster", ["firstName", "lastName", "profile_pic"]);
+
+    return res.status(200).json({ friendsPosts });
+  } catch (err) {
+    res.status(500).json({ error: "Error found!", err });
   }
 };
 

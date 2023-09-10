@@ -34,13 +34,19 @@ router.get("/getFriendReqs/:id", postsController.getFriendReqs);
 //accept friend req
 router.post("/acceptFriendReq/:id", postsController.acceptFriendReq);
 
+//eject friend req
+router.post("/acceptFriendReq/:id", postsController.rejectFriendReq);
+
 //delete friend
 router.post("/deleteFriend/:id", postsController.deleteFriend);
 
-//get friends
+//get friends to view  user's profile
 router.get("/getFriends/:id", postsController.getFriends);
 
-//get friends posts for timeline
+//get friends posts for dashboard
 router.get("/getFriendsPosts/:id", postsController.getFriendsPosts);
+
+//get friends list for dashboard
+router.get("/getFriends/", postsController.getFriendsList);
 
 module.exports = router;
