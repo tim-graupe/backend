@@ -80,6 +80,7 @@ exports.newTextPost = async function (req, res, next) {
       likes: [],
       date_posted: Date.now(),
       user: user._id,
+      type: "post",
     });
     await newPost.save();
   } catch (err) {
@@ -215,27 +216,44 @@ exports.sendFriendReq = async function (req, res, next) {
 //accept friend req
 exports.acceptFriendReq = async function (req, res, next) {
   try {
-    // RequestingFriendsId is the ID of the user who sent the request
-    const requestingUserId = req.body.RequestingFriendsId._id;
-    const currentUserID = req.user._id;
+    const requestingUser = req.body.RequestingFriendsId;
+    const currentUser = req.user;
 
     // Update the current user's friends list
     await User.updateOne(
-      { _id: currentUserID },
+      { _id: currentUser._id },
       {
-        $push: { friends: new ObjectId(requestingUserId) },
-        $pull: { incomingFriendRequests: requestingUserId },
+        $push: { friends: requestingUser },
+        $pull: { incomingFriendRequests: requestingUser },
       }
     );
 
     // Update the requesting user's friends list
     await User.updateOne(
-      { _id: new ObjectId(requestingUserId) },
+      { _id: requestingUser },
       {
-        $push: { friends: currentUserID },
-        $pull: { outgoingFriendRequests: currentUserID },
+        $push: { friends: currentUser._id },
+        $pull: { outgoingFriendRequests: currentUser._id },
       }
     );
+
+    const contentReqUser = `${requestingUser.firstName} ${requestingUser.lastName} is now friends with ${currentUser.firstName} ${currentUser.lastName}`;
+    const contentLoggedUser = `${currentUser.firstName} ${currentUser.lastName} is now friends with ${requestingUser.firstName} ${requestingUser.lastName}`;
+
+    // Create new posts for both users
+    const newPostForReqUser = new Post({
+      content: contentReqUser,
+      poster: requestingUser,
+      type: "newFriend",
+    });
+    await newPostForReqUser.save();
+
+    const newPostForLoggedUser = new Post({
+      content: contentLoggedUser,
+      poster: currentUser._id,
+      type: "newFriend",
+    });
+    await newPostForLoggedUser.save();
 
     return res.status(200).json({ success: true });
   } catch (err) {
@@ -249,20 +267,20 @@ exports.acceptFriendReq = async function (req, res, next) {
 exports.rejectFriendReq = async function (req, res, next) {
   try {
     // RequestingFriendsId is the ID of the user who sent the request
-    const requestingUserId = req.body.RequestingFriendsId._id;
+    const requestingUser = req.body.RequestingFriendsId._id;
     const currentUserID = req.user._id;
 
     // Update the current user's friends list
     await User.updateOne(
       { _id: currentUserID },
       {
-        $pull: { incomingFriendRequests: requestingUserId },
+        $pull: { incomingFriendRequests: requestingUser },
       }
     );
 
     // Update the requesting user's friends list
     await User.updateOne(
-      { _id: new ObjectId(requestingUserId) },
+      { _id: new ObjectId(requestingUser) },
       {
         $pull: { outgoingFriendRequests: currentUserID },
       }
@@ -299,7 +317,6 @@ exports.getFriendsList = async function (req, res, next) {
     const user = await User.findById(req.user._id)
       .populate("friends", ["firstName", "lastName", "profile_pic"])
       .exec();
-    console.log(user);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -329,8 +346,7 @@ exports.deleteFriend = async function (req, res, next) {
     // RequestingFriendsId is the ID of the user who sent the request
     const deletedUsersId = new ObjectId(req.params.id);
     const currentUserID = req.user._id;
-    console.log("deletedUsersId", deletedUsersId);
-    console.log("currentUserID", currentUserID);
+
     // Update the current user's friends list
     await User.updateOne(
       { _id: currentUserID },
@@ -355,5 +371,25 @@ exports.deleteFriend = async function (req, res, next) {
     return res
       .status(500)
       .json({ error: "Error occurred while deleting friend" });
+  }
+};
+
+exports.editStatus = async function (req, res, next) {
+  try {
+    let user = await User.findByIdAndUpdate(req.body.user, {
+      status: req.body.content,
+    });
+    let newPost = new Post({
+      content: req.body.content,
+      poster: user,
+      likes: [],
+      date_posted: Date.now(),
+      user: req.body.user,
+      type: "status",
+    });
+    await newPost.save();
+    return res.status(200).json(user);
+  } catch (err) {
+    return res.status(500).json({ error: "Something went wrong!", err });
   }
 };

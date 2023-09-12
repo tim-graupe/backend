@@ -17,7 +17,7 @@ router.post("/commentOnPost/:id", postsController.newComment);
 router.get("/user/:id", postsController.getUser);
 
 //edit user's status
-// router.put("/user/:id", postsController.editStatus);
+router.put("/user/:id", postsController.editStatus);
 
 //edit user profile
 router.put("/user/:id/bio", postsController.editUserInfo);
