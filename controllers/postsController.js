@@ -374,22 +374,22 @@ exports.deleteFriend = async function (req, res, next) {
   }
 };
 
-exports.editStatus = async function (req, res, next) {
-  try {
-    let user = await User.findByIdAndUpdate(req.body.user, {
-      status: req.body.content,
-    });
-    let newPost = new Post({
-      content: req.body.content,
-      poster: user,
-      likes: [],
-      date_posted: Date.now(),
-      user: req.body.user,
-      type: "status",
-    });
-    await newPost.save();
-    return res.status(200).json(user);
-  } catch (err) {
-    return res.status(500).json({ error: "Something went wrong!", err });
-  }
-};
+// exports.editStatus = async function (req, res, next) {
+//   try {
+//     let user = await User.findByIdAndUpdate(req.body.user, {
+//       status: req.body.content,
+//     });
+//     let newPost = new Post({
+//       content: req.body.content,
+//       poster: user,
+//       likes: [],
+//       date_posted: Date.now(),
+//       user: req.body.user,
+//       type: "status",
+//     });
+//     await newPost.save();
+//     return res.status(200).json(user);
+//   } catch (err) {
+//     return res.status(500).json({ error: "Something went wrong!", err });
+//   }
+// };
