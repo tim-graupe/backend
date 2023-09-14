@@ -49,4 +49,7 @@ router.get("/getFriendsPosts/:id", postsController.getFriendsPosts);
 //get friends list for dashboard
 router.get("/getFriends/", postsController.getFriendsList);
 
+//create new group
+router.post("/newGroup", postsController.createGroup);
+
 module.exports = router;

@@ -2,6 +2,7 @@ const { body, validationResult } = require("express-validator");
 const Post = require("../models/newPostModel");
 const User = require("../models/newUserModel");
 const Comment = require("../models/commentModel");
+const Group = require("../models/newGroupmodel");
 const { ObjectId } = require("mongodb");
 
 //get friend reqs
@@ -371,6 +372,26 @@ exports.deleteFriend = async function (req, res, next) {
     return res
       .status(500)
       .json({ error: "Error occurred while deleting friend" });
+  }
+};
+
+exports.createGroup = async function (req, res, next) {
+  try {
+    let user = req.user._id;
+    let newGroup = new Group({
+      name: req.body.name,
+      description: req.body.description,
+      pic: req.body.pic,
+      private: req.body.isPrivate,
+      admin: [user],
+      members: [user],
+    });
+    await newGroup.save();
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: "Error occurred while creating a group" });
   }
 };
 
