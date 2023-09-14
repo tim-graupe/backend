@@ -52,4 +52,6 @@ router.get("/getFriends/", postsController.getFriendsList);
 //create new group
 router.post("/newGroup", postsController.createGroup);
 
+//show group
+router.get("/group/:id", postsController.getGroup);
 module.exports = router;

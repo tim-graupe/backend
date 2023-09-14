@@ -37,6 +37,22 @@ exports.getUser = async function (req, res, next) {
   }
 };
 
+exports.getGroup = async function (req, res, next) {
+  try {
+    const userId = req.params.id;
+    let user = await Group.findById(userId)
+      .populate("members", ["firstName", "lastName", "profile_pic"])
+      .populate("admin", ["firstName", "lastName", "profile_pic"])
+      .exec();
+    return res.status(200).send(user);
+  } catch (err) {
+    console.log("err", err);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong in getting group" });
+  }
+};
+
 exports.getPosts = async function (req, res, next) {
   try {
     let posts = await Post.find({ user: req.params.id })
@@ -129,27 +145,34 @@ exports.newComment = async function (req, res, next) {
 };
 
 //search user
+
 exports.findUser = async function (req, res, next) {
-  const searchName = req.query.name
-    .split(" ")
-    .filter((name) => name.trim() !== "");
-  const searchQuery = {
-    $or: [
-      {
-        firstName: {
-          $in: searchName.map((name) => new RegExp(name, "i")),
-        },
-      },
-      {
-        lastName: {
-          $in: searchName.map((name) => new RegExp(name, "i")),
-        },
-      },
-    ],
-  };
+  const searchName = req.query.name.trim();
 
   try {
-    const searchResults = await User.find(searchQuery);
+    let searchResults = {};
+
+    // Search for a user by first name or last name
+    const userResult = await User.findOne({
+      $or: [
+        { firstName: new RegExp(searchName, "i") },
+        { lastName: new RegExp(searchName, "i") },
+      ],
+    });
+
+    if (userResult) {
+      searchResults.user = userResult;
+    }
+
+    // Search for a group by name
+    const groupResult = await Group.findOne({
+      name: new RegExp(searchName, "i"),
+    });
+
+    if (groupResult) {
+      searchResults.group = groupResult;
+    }
+
     res.json(searchResults);
   } catch (error) {
     console.error(error);
