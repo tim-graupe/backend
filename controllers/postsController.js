@@ -53,6 +53,22 @@ exports.getGroup = async function (req, res, next) {
   }
 };
 
+exports.getGroupsUserIsIn = async function (req, res, next) {
+  try {
+    const user = req.params.id;
+    let groups = await Group.find({
+      members: {
+        $in: user,
+      },
+    }).exec();
+
+    return res.status(200).send(groups);
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: "Something went wrong in getting group" });
+  }
+};
 exports.getPosts = async function (req, res, next) {
   try {
     let posts = await Post.find({ user: req.params.id })

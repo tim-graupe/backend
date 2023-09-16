@@ -54,4 +54,7 @@ router.post("/newGroup", postsController.createGroup);
 
 //show group
 router.get("/group/:id", postsController.getGroup);
+
+//show groups for profile
+router.get("/user/:id/groups", postsController.getGroupsUserIsIn);
 module.exports = router;
