@@ -72,12 +72,16 @@ exports.getGroupsUserIsIn = async function (req, res, next) {
 exports.getPosts = async function (req, res, next) {
   try {
     let posts = await Post.find({ user: req.params.id })
-      .populate("content")
-      .populate("user")
-      .populate("poster")
-      .populate("likes")
-      .populate("comments")
+      .populate("user poster likes")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+          select: ["firstName", "lastName"],
+        },
+      })
       .exec();
+
     return res.status(200).json(posts);
   } catch (err) {
     return res.status(500).json({ error: "error found!", err });
@@ -86,19 +90,26 @@ exports.getPosts = async function (req, res, next) {
 
 exports.addLikeToPost = async function (req, res, next) {
   try {
+    console.log(req.user._id);
     const currentUserID = req.user._id;
     const postToBeLiked = req.body.postId;
+
     // Update the current post's like count
-    await Post.findOneAndUpdate(
+    const updatedPost = await Post.findOneAndUpdate(
       { _id: postToBeLiked },
       {
         $push: { likes: currentUserID },
       }
     );
 
+    if (!updatedPost) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
     res.status(200).json({ message: "Like sent successfully!" });
   } catch (err) {
-    return res.status(500).json({ error: "Error found!" });
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -159,6 +170,30 @@ exports.newComment = async function (req, res, next) {
     res.status(500).json({ error: "Error occurred while creating a comment" });
   }
 };
+
+// exports.getComments = async function (req, res, next) {
+//   try {
+//     const post = await Post.findById(req.params.id)
+//       .populate({
+//         path: "comments",
+//         select: ["comment"],
+//         populate: {
+//           path: "user",
+//           select: ["firstName", "lastName", "profile_pic"],
+//         },
+//       })
+//       .exec();
+
+//     if (!post) {
+//       return res.status(404).json({ error: "Post not found" });
+//     }
+//     const comments = post.comments;
+
+//     return res.status(200).json({ comments });
+//   } catch (err) {
+//     return res.status(500).json({ error: "Error found!", err });
+//   }
+// };
 
 //search user
 
@@ -373,7 +408,16 @@ exports.getFriendsPosts = async function (req, res, next) {
     const user = await User.findById(req.user._id);
     const friendsPosts = await Post.find({
       poster: { $in: user.friends },
-    }).populate("poster", ["firstName", "lastName", "profile_pic"]);
+    })
+      .populate("poster", ["firstName", "lastName", "profile_pic"])
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+          select: ["firstName", "lastName"],
+        },
+      })
+      .exec();
 
     return res.status(200).json({ friendsPosts });
   } catch (err) {
