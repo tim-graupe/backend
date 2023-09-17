@@ -6,20 +6,27 @@ const Group = require("../models/newGroupmodel");
 const { ObjectId } = require("mongodb");
 
 //get friend reqs
+
 exports.getFriendReqs = async function (req, res, next) {
   try {
-    let friendReqs = await User.findOne({
-      _id: req.user._id,
-    })
+    const user = await User.findOne({ _id: req.user._id })
       .populate("incomingFriendRequests", [
         "firstName",
         "lastName",
         "profile_pic",
       ])
       .exec();
-    return res.status(200).send(friendReqs.incomingFriendRequests);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const incomingFriendRequests = user.incomingFriendRequests;
+
+    return res.status(200).json(incomingFriendRequests);
   } catch (err) {
-    return res.status(500).json({ error: "Error found!", err });
+    console.error(err); // Log the error for debugging purposes
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 exports.getUser = async function (req, res, next) {
@@ -90,21 +97,27 @@ exports.getPosts = async function (req, res, next) {
 
 exports.addLikeToPost = async function (req, res, next) {
   try {
-    console.log(req.user._id);
     const currentUserID = req.user._id;
     const postToBeLiked = req.body.postId;
 
-    // Update the current post's like count
-    const updatedPost = await Post.findOneAndUpdate(
-      { _id: postToBeLiked },
-      {
-        $push: { likes: currentUserID },
-      }
-    );
+    // Check if the user has already liked the post
+    const post = await Post.findOne({ _id: postToBeLiked });
 
-    if (!updatedPost) {
+    if (!post) {
       return res.status(404).json({ error: "Post not found" });
     }
+
+    if (post.likes.includes(currentUserID)) {
+      return res.status(400).json({ liked: true });
+    }
+
+    // Update the current post's like count by adding currentUserID to the likes array
+    await Post.updateOne(
+      { _id: postToBeLiked },
+      {
+        $addToSet: { likes: currentUserID },
+      }
+    );
 
     res.status(200).json({ message: "Like sent successfully!" });
   } catch (err) {
