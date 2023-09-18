@@ -34,7 +34,7 @@ app.use(passport.session());
 app.use(logger("dev"));
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", "https://tim-graupe.github.io/");
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
@@ -78,7 +78,7 @@ passport.use(
       clientID: process.env.googleID,
       clientSecret: process.env.googleSecret,
       callbackURL:
-        "https://backend-production-f695.up.railway.app//auth/google/callback",
+        "https://backend-production-f695.up.railway.app/auth/google/callback",
     },
     async function (accessToken, refreshToken, profile, done) {
       try {
@@ -138,7 +138,7 @@ app.get(
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
     // Successful authentication, redirect home.
-    res.redirect("http://localhost:3000/home");
+    res.redirect("https://tim-graupe.github.io/home");
   }
 );
 //routes - to be moved
@@ -148,7 +148,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 var corsOptions = {
-  origin: "http://localhost:3000",
+  origin: "https://tim-graupe.github.io/",
   credentials: true,
 };
 

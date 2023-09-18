@@ -3,7 +3,7 @@ passport.use(
     {
       clientID: process.env.googleID,
       clientSecret: process.env.googleSecret,
-      callbackURL: "http://localhost:3000/",
+      callbackURL: "https://tim-graupe.github.io/",
       passReqToCallback: true,
     },
     function (request, accessToken, refreshToken, profile, done) {
