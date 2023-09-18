@@ -138,7 +138,7 @@ app.get(
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
     // Successful authentication, redirect home.
-    res.redirect("https://tim-graupe.github.io/home");
+    res.redirect("https://tim-graupe.github.io/frontend/home");
   }
 );
 //routes - to be moved
