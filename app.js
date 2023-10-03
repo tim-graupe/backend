@@ -34,7 +34,10 @@ app.use(passport.session());
 app.use(logger("dev"));
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "https://tim-graupe.github.io/");
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://tim-graupe.github.io/frontend/"
+  );
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
@@ -77,8 +80,7 @@ passport.use(
     {
       clientID: process.env.googleID,
       clientSecret: process.env.googleSecret,
-      callbackURL:
-        "https://backend-production-f695.up.railway.app/auth/google/callback",
+      callbackURL: "https://tim-graupe.github.io/auth/google/callback",
     },
     async function (accessToken, refreshToken, profile, done) {
       try {
