@@ -36,7 +36,7 @@ app.use(bodyParser.json());
 app.use(function (req, res, next) {
   res.header(
     "Access-Control-Allow-Origin",
-    "https://tim-graupe.github.io/frontend/"
+    "https://tim-graupe.github.io/frontend/#/"
   );
   res.header(
     "Access-Control-Allow-Headers",
@@ -80,7 +80,8 @@ passport.use(
     {
       clientID: process.env.googleID,
       clientSecret: process.env.googleSecret,
-      callbackURL: "https://tim-graupe.github.io/frontend/auth/google/callback",
+      callbackURL:
+        "https://backend-production-f695.up.railway.app/auth/google/callback",
     },
     async function (accessToken, refreshToken, profile, done) {
       try {
