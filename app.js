@@ -80,7 +80,7 @@ passport.use(
     {
       clientID: process.env.googleID,
       clientSecret: process.env.googleSecret,
-      callbackURL: "https://tim-graupe.github.io/frotend/auth/google/callback",
+      callbackURL: "https://tim-graupe.github.io/frontend/auth/google/callback",
     },
     async function (accessToken, refreshToken, profile, done) {
       try {
