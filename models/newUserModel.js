@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema({
   lastName: { type: String, minLength: 1, maxLength: 30 },
   email: { type: String, unique: true },
   password: { type: String, default: "" },
-  profile_pic: { type: String, default: "" },
+  // profile_pic: { type: String, default: "" },
   status: { type: String, default: "", maxLength: 25 },
   relationship: { type: String, default: "" },
   partner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
