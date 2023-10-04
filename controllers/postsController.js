@@ -249,7 +249,7 @@ exports.editUserInfo = async function (req, res, next) {
     let user = await User.findByIdAndUpdate(req.params.id, {
       firstName: req.body.firstName,
       lastName: req.body.lastName,
-      // profile_pic: { type: String, default: "" },
+      profile_pic: req.body.profile_pic,
       relationship: req.body.relationship,
       politics: req.body.politics,
       high_school: req.body.high_school,
