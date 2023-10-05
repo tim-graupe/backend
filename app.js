@@ -21,6 +21,11 @@ async function main() {
 const authRouter = require("./routes/auth");
 const userRouter = require("./routes/user");
 
+//base url
+const baseUrl = process.env.BASE_URL || "http://localhost:3000";
+//api url
+const apiUrl = process.env.API_URL || "http://localhost:4000";
+
 const app = express();
 app.use(
   session({
@@ -34,7 +39,7 @@ app.use(passport.session());
 app.use(logger("dev"));
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", baseUrl);
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
@@ -77,7 +82,7 @@ passport.use(
     {
       clientID: process.env.googleID,
       clientSecret: process.env.googleSecret,
-      callbackURL: "http://localhost:4000/auth/google/callback",
+      callbackURL: `${apiUrl}/auth/google/callback`,
     },
     async function (accessToken, refreshToken, profile, done) {
       try {
@@ -137,7 +142,7 @@ app.get(
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
     // Successful authentication, redirect home.
-    res.redirect("http://localhost:3000/home");
+    res.redirect(`${baseUrl}/home`);
   }
 );
 //routes - to be moved
@@ -147,14 +152,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 var corsOptions = {
-  origin: "http://localhost:3000",
+  origin: baseUrl,
   credentials: true,
 };
 
 app.use(cors(corsOptions));
 
 app.use(function (req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.setHeader("Access-Control-Allow-Origin", baseUrl);
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, OPTIONS, PUT, PATCH, DELETE"
