@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const postsController = require("../controllers/postsController");
+const passport = require("passport");
 
 //new text post
 router.post("/user/:id/new_post", postsController.newTextPost);
@@ -57,4 +58,14 @@ router.get("/group/:id", postsController.getGroup);
 
 //show groups for profile
 router.get("/user/:id/groups", postsController.getGroupsUserIsIn);
+
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+    // Redirect to your frontend after successful authentication
+    res.redirect("/dashboard");
+  }
+);
+
 module.exports = router;
