@@ -22,7 +22,7 @@ const authRouter = require("./routes/auth");
 const userRouter = require("./routes/user");
 
 const apiUrl =
-  process.env.NODE_ENV === "development"
+  process.env.NODE_ENV === "production"
     ? process.env.API_URL
     : "http://localhost:4000";
 console.log(mongoDB);
@@ -30,7 +30,7 @@ console.log(process.env.env);
 console.log(process.env.API_URL);
 console.log(process.env.BASE_URL);
 const baseUrl =
-  process.env.NODE_ENV === "development"
+  process.env.NODE_ENV === "production"
     ? process.env.BASE_URL
     : "http://localhost:3000";
 
