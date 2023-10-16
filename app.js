@@ -151,7 +151,7 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
-    res.redirect(`${baseUrl}/home`);
+    res.redirect(`https://topodinbook.netlify.app/home`);
   }
 );
 //routes - to be moved
@@ -161,14 +161,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 var corsOptions = {
-  origin: `${baseUrl}`,
+  origin: `https://topodinbook.netlify.app/`,
   credentials: true,
 };
 
 app.use(cors(corsOptions));
 
 app.use(function (req, res, next) {
-  res.setHeader("Access-Control-Allow-Origin", `${baseUrl}`);
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    `https://topodinbook.netlify.app/`
+  );
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, OPTIONS, PUT, PATCH, DELETE"
