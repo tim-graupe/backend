@@ -35,7 +35,7 @@ const baseUrl =
     : "http://localhost:3000";
 
 const app = express();
-console.log(baseUrl, apiUrl);
+console.log("baseUrl =>", baseUrl, "apiUrl =>", apiUrl);
 app.use(
   session({
     secret: process.env.secret,
