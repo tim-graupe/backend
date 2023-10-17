@@ -385,7 +385,7 @@ exports.rejectFriendReq = async function (req, res, next) {
 
 exports.getFriends = async function (req, res, next) {
   try {
-    console.log("user ==> ", res.user);
+    console.log("USER => ", req.user._id);
     const user = await User.findById(req.params.id)
       .populate("friends", ["firstName", "lastName", "profile_pic"])
       .exec();
