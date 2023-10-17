@@ -48,7 +48,7 @@ app.use(passport.session());
 app.use(logger("dev"));
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "https://topodinbook.netlify.app");
+  res.header("Access-Control-Allow-Origin", "https://topodinbook.netlify.app/");
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
