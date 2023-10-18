@@ -385,8 +385,7 @@ exports.rejectFriendReq = async function (req, res, next) {
 
 exports.getFriends = async function (req, res, next) {
   try {
-    console.log("USER => ", req.user._id);
-    const user = await User.findById(req.params.id)
+    const user = await User.findById(req.user._id)
       .populate("friends", ["firstName", "lastName", "profile_pic"])
       .exec();
 
@@ -396,7 +395,7 @@ exports.getFriends = async function (req, res, next) {
     return res.status(200).json({ user });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Error found!", err });
+    return res.status(500).json({ error: "Error found in getFriends!", err });
   }
 };
 
@@ -412,7 +411,9 @@ exports.getFriendsList = async function (req, res, next) {
     return res.status(200).json({ user });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Error found!", err });
+    return res
+      .status(500)
+      .json({ error: "Error found in getFriendsList!", err });
   }
 };
 
@@ -435,7 +436,7 @@ exports.getFriendsPosts = async function (req, res, next) {
 
     return res.status(200).json({ friendsPosts });
   } catch (err) {
-    res.status(500).json({ error: "Error found!", err });
+    res.status(500).json({ error: "Error found in getFriendsPosts!", err });
   }
 };
 
