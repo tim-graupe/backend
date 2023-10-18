@@ -392,6 +392,7 @@ exports.getFriends = async function (req, res, next) {
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+    console.log("User data in production:", user);
     return res.status(200).json({ user });
   } catch (err) {
     console.error(err);
