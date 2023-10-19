@@ -385,18 +385,17 @@ exports.rejectFriendReq = async function (req, res, next) {
 
 exports.getFriends = async function (req, res, next) {
   try {
-    const user = await User.findById(req.user._id)
+    const user = await User.findById(req.params.id)
       .populate("friends", ["firstName", "lastName", "profile_pic"])
       .exec();
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    console.log("User data in production:", user);
     return res.status(200).json({ user });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Error found in getFriends!", err });
+    return res.status(500).json({ error: "Error found!", err });
   }
 };
 
@@ -412,9 +411,7 @@ exports.getFriendsList = async function (req, res, next) {
     return res.status(200).json({ user });
   } catch (err) {
     console.error(err);
-    return res
-      .status(500)
-      .json({ error: "Error found in getFriendsList!", err });
+    return res.status(500).json({ error: "Error found!", err });
   }
 };
 
@@ -437,7 +434,7 @@ exports.getFriendsPosts = async function (req, res, next) {
 
     return res.status(200).json({ friendsPosts });
   } catch (err) {
-    res.status(500).json({ error: "Error found in getFriendsPosts!", err });
+    res.status(500).json({ error: "Error found!", err });
   }
 };
 
