@@ -7,7 +7,7 @@ const logger = require("morgan");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
-const session = require("express-session");
+const session = require("cookie-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
@@ -41,7 +41,6 @@ app.use(
     secret: process.env.secret,
     resave: true,
     saveUninitialized: true,
-    cookie: { secure: true },
   })
 );
 app.use(passport.initialize());
