@@ -39,8 +39,10 @@ console.log("baseUrl =>", baseUrl, "apiUrl =>", apiUrl);
 app.use(
   session({
     secret: process.env.secret,
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
+    httpOnly: false,
+    sameSite: "none",
   })
 );
 app.use(passport.initialize());
