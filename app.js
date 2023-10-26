@@ -41,8 +41,6 @@ app.use(
     secret: process.env.secret,
     resave: false,
     saveUninitialized: false,
-    httpOnly: false,
-    sameSite: "none",
   })
 );
 app.use(passport.initialize());
@@ -50,7 +48,7 @@ app.use(passport.session());
 app.use(logger("dev"));
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "https://topodinbook.netlify.app/");
+  res.header("Access-Control-Allow-Origin", `${baseUrl}`);
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
